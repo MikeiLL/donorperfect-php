@@ -16,53 +16,40 @@ class DonorPerfect
 
 		$apiQuery = '?apikey=' . self::$apiKey . '&action=' . ((stripos($action, '&params') !== false) ? $action : rawurlencode(trim(str_ireplace(["\n","\t","  ","  )"], [" ",""," "," )"], $action))));
 
-			if (strlen(self::$apiUrl . $apiQuery) > 2048)
-			{
-				throw new \Exception('DP API Call Exceeds Maximum Length');
-			}
+		if (strlen(self::$apiUrl . $apiQuery) > 2048)
+		{
+			throw new \Exception('DP API Call Exceeds Maximum Length');
+		}
 
-			$apiConnection = curl_init(self::$apiUrl . $apiQuery);
+		$apiConnection = curl_init(self::$apiUrl . $apiQuery);
 
-			curl_setopt($apiConnection, CURLOPT_HTTPHEADER, ['Content-Type: text/xml']);
-			curl_setopt($apiConnection, CURLOPT_RETURNTRANSFER, 1);
-			curl_setopt($apiConnection, CURLOPT_TIMEOUT, 20);
-			curl_setopt($apiConnection, CURLOPT_SSL_VERIFYPEER, FALSE);
+		curl_setopt($apiConnection, CURLOPT_HTTPHEADER, ['Content-Type: text/xml']);
+		curl_setopt($apiConnection, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($apiConnection, CURLOPT_TIMEOUT, 20);
+		curl_setopt($apiConnection, CURLOPT_SSL_VERIFYPEER, FALSE);
 
-			$apiResponse = '';
-			while (empty($apiResponse) || trim($apiResponse) === 'The page cannot be displayed because an internal server error has occurred.')
-			{
-				$apiResponseLog = $apiResponse = curl_exec($apiConnection);
-				sleep(1);
-			}
-			curl_close ($apiConnection);
+		$apiResponse = '';
+		
+		while (empty($apiResponse) || trim($apiResponse) === 'The page cannot be displayed because an internal server error has occurred.')
+		{
+			$apiResponseLog = $apiResponse = curl_exec($apiConnection);
+			sleep(1);
+		}
+		
+		curl_close ($apiConnection);
 
-            // Fix values with invalid unescaped XML values
-            $apiResponse = preg_replace('|(?Umsi)(value=\'DATE:.*\\R*\')|', 'value=\'\'', $apiResponse);
+        // Fix values with invalid unescaped XML values
+        $apiResponse = preg_replace('|(?Umsi)(value=\'DATE:.*\\R*\')|', 'value=\'\'', $apiResponse);
+		$apiResponse = json_decode(json_encode(simplexml_load_string($apiResponse)), true);
 
-			try
-			{
-				$apiResponse = json_decode(json_encode(simplexml_load_string($apiResponse)), true);
-			}
-			catch (\Exception $e)
-			{
-				return $e;
-			}
-
-			if (is_array($apiResponse) && $parseResponse)
-			{
-				try
-				{
-					$apiResponse = self::parseApiResponse($apiResponse);
-				}
-				catch (\Exception $e)
-				{
-					return $e;
-				}
-			}
-            elseif ( ! is_array($apiResponse))
-            {
-                exit('Error connecting to DonorPerfect.');
-            }
+		if (is_array($apiResponse) && $parseResponse)
+		{
+			$apiResponse = self::parseApiResponse($apiResponse);
+		}
+        elseif ( ! is_array($apiResponse))
+        {
+            throw new \Exception('Error connecting to DonorPerfect.');
+        }
 
 		return $apiResponse;
 	}
