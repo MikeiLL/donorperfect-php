@@ -38,18 +38,18 @@ class DonorPerfect
 		
 		curl_close ($apiConnection);
 
-        // Fix values with invalid unescaped XML values
-        $apiResponse = preg_replace('|(?Umsi)(value=\'DATE:.*\\R*\')|', 'value=\'\'', $apiResponse);
+        	// Fix values with invalid unescaped XML values
+        	$apiResponse = preg_replace('|(?Umsi)(value=\'DATE:.*\\R*\')|', 'value=\'\'', $apiResponse);
 		$apiResponse = json_decode(json_encode(simplexml_load_string($apiResponse)), true);
 
 		if (is_array($apiResponse) && $parseResponse)
 		{
 			$apiResponse = self::parseApiResponse($apiResponse);
 		}
-        elseif ( ! is_array($apiResponse))
-        {
-            throw new \Exception('Error connecting to DonorPerfect.');
-        }
+	        elseif ( ! is_array($apiResponse))
+	        {
+	        	throw new \Exception('Error connecting to DonorPerfect.');
+	        }
 
 		return $apiResponse;
 	}
