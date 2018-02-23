@@ -29,13 +29,13 @@ class DonorPerfect
 		curl_setopt($apiConnection, CURLOPT_SSL_VERIFYPEER, FALSE);
 
 		$apiResponse = '';
-		
+
 		while (empty($apiResponse) || trim($apiResponse) === 'The page cannot be displayed because an internal server error has occurred.')
 		{
 			$apiResponseLog = $apiResponse = curl_exec($apiConnection);
 			sleep(1);
 		}
-		
+
 		curl_close ($apiConnection);
 
         	// Fix values with invalid unescaped XML values
@@ -119,8 +119,7 @@ class DonorPerfect
 						dp.state,
 						dp.zip,
 						dp.country,
-						dp.gift_total,
-						dpudf.re_constituent_id
+						dp.gift_total
 					FROM dp
 					LEFT JOIN dpudf ON dpudf.donor_id = dp.donor_id
 					WHERE
@@ -954,7 +953,7 @@ class DonorPerfect
 					) AS tmp
 				WHERE tmp.row_number BETWEEN {$pageStart} AND {$pageEnd}
 				");
-			
+
 				if (is_object($response) && ! empty($response->donor_id)) $response = [$response];
 
 				if (is_array($response) && count($response) > 0)
